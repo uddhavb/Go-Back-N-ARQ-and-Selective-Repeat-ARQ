@@ -23,14 +23,16 @@ def get_acks(client):
     global Window
     global lock_on_window
     while True:
-        ack = client.recv(1024)
-        # print("ACK: ", ack)
-        ack = extract_data(ack)
-        with lock_on_window:
-            number_of_elements_to_delete = Window.index(ack[0]) + 1
-            while number_of_elements_to_delete > 0:
-                del(Window[0])
-                number_of_elements_to_delete -= 1
+        ack = client.recv(8)
+        if ack != b'':
+            ack = extract_data(ack)
+            print("WIIIIIIIIIIIIIIIINDOW:\t\t\t", Window)
+            print("ACCCCCCCCCCCCCKKKKKKK:\t\t\t",ack)
+            with lock_on_window:
+                number_of_elements_to_delete = Window.index(ack[0]) + 1
+                while number_of_elements_to_delete > 0:
+                    del(Window[0])
+                    number_of_elements_to_delete -= 1
 
 
 # create an ipv4 (AF_INET) socket object using the tcp protocol (SOCK_STREAM)
@@ -50,6 +52,7 @@ with open(file_name, "rb") as f:
             if len(Window) <= N:
                 packet = Packet(sequence_number, 21845, mss)
                 print("MSS: ", mss)
+                Window.append(sequence_number)
                 sequence_number+=1
                 # print("Sending: ", packet.packetData)
                 client.send(packet.packetData)
