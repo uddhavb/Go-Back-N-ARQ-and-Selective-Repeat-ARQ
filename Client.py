@@ -48,10 +48,11 @@ with open(file_name, "rb") as f:
     while mss:
         with lock_on_window:
             if len(Window) <= N:
-                mss = f.read(MSS)
                 packet = Packet(sequence_number, 21845, mss)
+                print("MSS: ", mss)
                 sequence_number+=1
                 print("Sending: ", packet.packetData)
                 client.send(packet.packetData)
+                mss = f.read(MSS)
 
 ack_thread.join()
