@@ -24,7 +24,7 @@ def get_acks(client):
     global lock_on_window
     while True:
         ack = client.recv(1024)
-        print("ACK: ", ack)
+        # print("ACK: ", ack)
         ack = extract_data(ack)
         with lock_on_window:
             number_of_elements_to_delete = Window.index(ack[0]) + 1
@@ -51,8 +51,9 @@ with open(file_name, "rb") as f:
                 packet = Packet(sequence_number, 21845, mss)
                 print("MSS: ", mss)
                 sequence_number+=1
-                print("Sending: ", packet.packetData)
+                # print("Sending: ", packet.packetData)
                 client.send(packet.packetData)
                 mss = f.read(MSS)
+                time.sleep(0.1)
 
 ack_thread.join()

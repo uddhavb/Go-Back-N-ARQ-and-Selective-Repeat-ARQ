@@ -20,28 +20,31 @@ print('Listening on {}:{}'.format(bind_ip, bind_port))
 def drop_packets(prob, packet):
     print("drop packets")
 
-client_socket, address = server.accept()
+server_socket, address = server.accept()
 Window = []
 print('Accepted connection from {}:{}'.format(address[0], address[1]))
-with open(filename, 'w') as outfile:
-    while True:
-        request = client_socket.recv(1024)
-        print("request: ",request)
-        # request = request.decode("utf-8")
-        checksum = calculate2ByteChecksum(request)
+try:
+    with open(filename, 'w') as outfile:
+        while True:
+            request = server_socket.recv(1024)
+            # print("request: ",request)
+            # request = request.decode("utf-8")
+            checksum = calculate2ByteChecksum(request)
 
-        # print(data[0],data[1],data[2],data[3])
+            # print(data[0],data[1],data[2],data[3])
+            received_checksum = request[4]<<8
+            received_checksum = received_checksum + request[5]
 
-
-        # print("checksum: ", checksum)
-        if checksum != 0:
-            print("Packet is corrupted!! Seq num:", request[0])
-        else:
-            data = extract_data(request)
-            print("DATA:\n",data[3].decode("utf-8"))
-            outfile.write(data[3].decode("utf-8"))
-            print("ACK for: ", data[0])
-            packet = Packet(int(data[0]), 43690)
-            print("ACK: ", packet.packetData)
-            server.send(packet.packetData)
-time.sleep(5)
+            # print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
+            if checksum != 2*received_checksum:
+                print("Packet is corrupted!! Seq num:", request[0])
+            else:
+                data = extract_data(request)
+                print("DATA:\n",data[3].decode("utf-8"))
+                outfile.write(data[3].decode("utf-8"))
+                # print("ACK for: ", data[0])
+                packet = Packet(int(data[0]), 43690)
+                # print("ACK: ", packet.packetData)
+                server_socket.send(packet.packetData)
+except:
+    print("Connection broken")
