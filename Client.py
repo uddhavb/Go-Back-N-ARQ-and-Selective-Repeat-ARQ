@@ -26,10 +26,10 @@ def get_acks(client):
         ack = client.recv(8)
         if ack != b'':
             ack = extract_data(ack)
-            print("WIIIIIIIIIIIIIIIINDOW:\t\t\t", Window)
-            print("ACCCCCCCCCCCCCKKKKKKK:\t\t\t",ack)
             with lock_on_window:
-                number_of_elements_to_delete = Window.index(ack[0]) + 1
+                for index, element in enumerate(Window):
+                    if element[0] == ack[0]:
+                        number_of_elements_to_delete = index+1
                 while number_of_elements_to_delete > 0:
                     del(Window[0])
                     number_of_elements_to_delete -= 1
@@ -52,11 +52,17 @@ with open(file_name, "rb") as f:
             if len(Window) <= N:
                 packet = Packet(sequence_number, 21845, mss)
                 print("MSS: ", mss)
-                Window.append(sequence_number)
-                sequence_number+=1
                 # print("Sending: ", packet.packetData)
                 client.send(packet.packetData)
+                Window.append([sequence_number, packet.packetData, time.time()])
+                sequence_number+=1
                 mss = f.read(MSS)
                 time.sleep(0.1)
+            if time.time() - Window[0][2] > 1:
+                new_window = []
+                for window_element in Window:
+                    client.send(window_element[1])
+                    new_window.append([window_element[0], window_element[1], time.time()])
+                Window = new_window
 
 ack_thread.join()

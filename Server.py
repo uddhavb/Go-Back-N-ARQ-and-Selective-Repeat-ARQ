@@ -9,7 +9,7 @@ import random
 # Simple_ftp_server port# file-name p
 port_number = int(sys.argv[1])
 filename = sys.argv[2]
-probability_of_loss = sys.argv[3]
+probability_of_loss = float(sys.argv[3])
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 bind_ip = '127.0.0.1'
@@ -38,7 +38,7 @@ try:
             received_checksum = received_checksum + request[5]
 
             # print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
-            if checksum != 2*received_checksum: # or random.uniform(0, 1) <= probability_of_loss:
+            if checksum != 2*received_checksum or random.uniform(0, 1) <= probability_of_loss:
                 print("Packet is corrupted!! Seq num:", request[0])
             else:
                 data = extract_data(request)
