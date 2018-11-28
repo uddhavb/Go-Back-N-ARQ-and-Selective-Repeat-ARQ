@@ -20,10 +20,14 @@ lock_on_window = threading.Lock()
 
 
 def get_acks(client):
+    print("new thread")
     global Window
     global lock_on_window
     while True:
-        ack = client.recv(8)
+        # ack = client.recv(8)
+        print("receiving ack")
+        ack, address = client.recvfrom(8)
+        print("received ack")
         if ack != b'':
             ack = extract_data(ack)
             with lock_on_window:
@@ -36,14 +40,19 @@ def get_acks(client):
 
 
 # create an ipv4 (AF_INET) socket object using the tcp protocol (SOCK_STREAM)
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# connect the client
-# client.connect((target, port))
-client.connect((hostname, port_number))
+# client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# # connect the client
+# # client.connect((target, port))
+# client.connect((hostname, port_number))
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client.bind(('',port_number))
+client.settimeout(10)
+# bind_ip = hostname
+# bind_port = port_number
+# # client.bind((bind_ip, bind_port))
 ack_thread = threading.Thread(target=get_acks, args = (client,))
 ack_thread.daemon = True
 ack_thread.start()
-
 with open(file_name, "rb") as f:
     sequence_number = 0
     mss = f.read(MSS)
@@ -53,15 +62,18 @@ with open(file_name, "rb") as f:
                 packet = Packet(sequence_number, 21845, mss)
                 print("MSS: ", mss)
                 # print("Sending: ", packet.packetData)
-                client.send(packet.packetData)
+                # client.send(packet.packetData)
+                client.sendto(packet.packetData, (hostname, 7735))
                 Window.append([sequence_number, packet.packetData, time.time()])
                 sequence_number+=1
                 mss = f.read(MSS)
                 time.sleep(0.1)
-            if time.time() - Window[0][2] > 1:
+            if time.time() - Window[0][2] > 0.2:
+                print("Timeout, sequence number =", Window[0][0])
                 new_window = []
                 for window_element in Window:
-                    client.send(window_element[1])
+                    client.sendto(window_element[1], (hostname, 7735))
+                    # client.send(window_element[1])
                     new_window.append([window_element[0], window_element[1], time.time()])
                 Window = new_window
 
