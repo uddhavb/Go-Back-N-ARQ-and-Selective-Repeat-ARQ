@@ -37,7 +37,7 @@ try:
             #     packet = Packet(CURRENT_SEQUENCE_NUMBER[0], 43690)
             #     server_socket.sendto(packet.packetData, (bind_ip, client_port_number))
             #     CURRENT_SEQUENCE_NUMBER[1] = time.time()
-            if CURRENT_SEQUENCE_NUMBER != int(data[0]) and (checksum == received_checksum or checksum == 2*received_checksum or random.uniform(0, 1) > probability_of_loss):
+            if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum or checksum == 2*received_checksum or random.uniform(0, 1) > probability_of_loss):
                 print("DATA:\t",data[3].decode("utf-8"))
                 outfile.write(data[3].decode("utf-8"))
                 packet = Packet(int(data[0]), 43690)
