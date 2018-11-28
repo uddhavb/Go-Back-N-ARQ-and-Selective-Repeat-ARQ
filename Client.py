@@ -24,10 +24,7 @@ def get_acks(client):
     global Window
     global lock_on_window
     while True:
-        # ack = client.recv(8)
-        print("receiving ack")
-        ack, address = client.recvfrom(8)
-        print("received ack")
+        ack, address = client.recvfrom(20)
         if ack != b'':
             ack = extract_data(ack)
             with lock_on_window:
