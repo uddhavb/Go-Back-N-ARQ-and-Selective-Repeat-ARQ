@@ -5,8 +5,8 @@ import sys
 def calculate2ByteChecksum(packet):
     checksum = 0
     packet_to_byte = array("B", packet)
-    packet_to_byte.pop(4)
     packet_to_byte.pop(5)
+    packet_to_byte.pop(4)
     i = 0
     while i < len(packet_to_byte)/2:
         # print(int.from_bytes(mystr[i*2:i*2+1], byteorder=sys.byteorder))
@@ -34,7 +34,7 @@ class Packet:
         packet_to_byte.extend(data)
         self.packetData = array('B',packet_to_byte).tostring()
         checksum = calculate2ByteChecksum(self.packetData)
-        print("checksum: ", checksum)
+        print("checksum: ", str(checksum))
         byte_array = array('B',self.packetData)
         '''next 2 bytes give the checksum'''
         byte_array[4] = checksum>>8
