@@ -60,6 +60,7 @@ with open(file_name, "rb") as f:
                 print("MSS: ", mss)
                 # print("Sending: ", packet.packetData)
                 # client.send(packet.packetData)
+                print("Client Sent data = " + packet.packetData)
                 client.sendto(packet.packetData, (hostname, 7735))
                 Window.append([sequence_number, packet.packetData, time.time()])
                 sequence_number+=1

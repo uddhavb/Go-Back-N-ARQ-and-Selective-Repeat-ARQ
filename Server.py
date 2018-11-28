@@ -15,7 +15,6 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 bind_ip = '127.0.0.1'
 bind_port = 7735
 server_socket.bind(('', bind_port))
-server_socket.settimeout(10)
 # server.listen(5)  # max backlog of connections
 CURRENT_SEQUENCE_NUMBER = 0
 # server_socket, address = server.accept()
@@ -27,7 +26,8 @@ try:
             request, address = server_socket.recvfrom(1024)
             # request = server_socket.recv(1024)
             checksum = calculate2ByteChecksum(request)
-
+            print("Received data = " + request)
+            print("Server Checksum = " + checksum)
             # print(data[0],data[1],data[2],data[3])
             received_checksum = request[4]<<8
             received_checksum = received_checksum + request[5]
@@ -37,7 +37,7 @@ try:
             #     packet = Packet(CURRENT_SEQUENCE_NUMBER[0], 43690)
             #     server_socket.sendto(packet.packetData, (bind_ip, client_port_number))
             #     CURRENT_SEQUENCE_NUMBER[1] = time.time()
-            if CURRENT_SEQUENCE_NUMBER != int(data[0]) and (checksum == received_checksum or checksum == 2*received_checksum or random.uniform(0, 1) > probability_of_loss):
+            if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum or checksum == 2*received_checksum or random.uniform(0, 1) > probability_of_loss):
                 print("DATA:\t",data[3].decode("utf-8"))
                 outfile.write(data[3].decode("utf-8"))
                 packet = Packet(int(data[0]), 43690)

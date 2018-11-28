@@ -34,7 +34,7 @@ class Packet:
         packet_to_byte.extend(data)
         self.packetData = array('B',packet_to_byte).tostring()
         checksum = calculate2ByteChecksum(self.packetData)
-        # print("checksum: ", checksum)
+        print("checksum: ", checksum)
         byte_array = array('B',self.packetData)
         '''next 2 bytes give the checksum'''
         byte_array[4] = checksum>>8
