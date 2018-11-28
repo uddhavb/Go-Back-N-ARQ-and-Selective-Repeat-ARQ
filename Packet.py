@@ -52,7 +52,7 @@ class Packet:
 def extract_data(packet): #packet is an attribute of above class
     sequence_number = 0
     byte_array = array('B',packet)
-    print(byte_array, len(byte_array))
+    # print(byte_array, len(byte_array))
     '''get the seq num from the first 4 bytes'''
     for i in range(0,4):
         sequence_number = sequence_number + (byte_array[i]<<((3-i)*8))
