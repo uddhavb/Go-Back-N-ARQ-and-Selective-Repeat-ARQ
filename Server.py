@@ -32,12 +32,12 @@ try:
             received_checksum = request[4]<<8
             received_checksum = received_checksum + request[5]
             data = extract_data(request)
-            # print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
+            print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
             # if (time.time() - CURRENT_SEQUENCE_NUMBER[1]) > 3 and CURRENT_SEQUENCE_NUMBER[0] > data[0]:
             #     packet = Packet(CURRENT_SEQUENCE_NUMBER[0], 43690)
             #     server_socket.sendto(packet.packetData, (bind_ip, client_port_number))
             #     CURRENT_SEQUENCE_NUMBER[1] = time.time()
-            if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum or checksum == 2*received_checksum or random.uniform(0, 1) > probability_of_loss):
+            if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum or random.uniform(0, 1) > probability_of_loss):
                 print("DATA:\t",data[3].decode("utf-8"))
                 outfile.write(data[3].decode("utf-8"))
                 packet = Packet(int(data[0]), 43690)

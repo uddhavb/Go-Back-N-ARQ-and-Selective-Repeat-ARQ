@@ -1,12 +1,13 @@
 import struct
 from array import array
 import sys
+import math
 
 def calculate2ByteChecksum(packet):
     checksum = 0
     packet_to_byte = array("B", packet)
-    packet_to_byte.pop(4)
     packet_to_byte.pop(5)
+    packet_to_byte.pop(4)
     i = 0
     while i < len(packet_to_byte)/2:
         # print(int.from_bytes(mystr[i*2:i*2+1], byteorder=sys.byteorder))
@@ -19,6 +20,8 @@ def calculate2ByteChecksum(packet):
             checksum += carry
             carry = (checksum ^ mask) >> 16
         i += 2
+    number_of_bits = (int)(math.floor(math.log(checksum) / math.log(2))) + 1;
+    return ((1 << number_of_bits) - 1) ^ checksum;
     return checksum
 
 class Packet:
