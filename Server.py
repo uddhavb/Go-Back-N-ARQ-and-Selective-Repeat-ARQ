@@ -15,7 +15,6 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 bind_ip = '127.0.0.1'
 bind_port = 7735
 server_socket.bind(('', bind_port))
-server_socket.settimeout(10)
 # server.listen(5)  # max backlog of connections
 CURRENT_SEQUENCE_NUMBER = 0
 # server_socket, address = server.accept()
@@ -27,7 +26,8 @@ try:
             request, address = server_socket.recvfrom(1024)
             # request = server_socket.recv(1024)
             checksum = calculate2ByteChecksum(request)
-
+    #        print("Received data = " + str(request))
+    #        print("Server Checksum = " + str(checksum))
             # print(data[0],data[1],data[2],data[3])
             received_checksum = request[4]<<8
             received_checksum = received_checksum + request[5]
@@ -46,5 +46,5 @@ try:
             else:
                 print("Packet loss, sequence number =", data[0])
 except Exception as e:
-    print(e)
-    print("Connection broken")
+   print(e)
+   print("Connection broken")

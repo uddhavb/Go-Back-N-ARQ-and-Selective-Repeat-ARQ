@@ -57,9 +57,10 @@ with open(file_name, "rb") as f:
         with lock_on_window:
             if len(Window) <= N:
                 packet = Packet(sequence_number, 21845, mss)
-                print("MSS: ", mss)
+#                print("MSS: ", mss)
                 # print("Sending: ", packet.packetData)
                 # client.send(packet.packetData)
+#                print("Client Sent data = " + str(packet.packetData))
                 client.sendto(packet.packetData, (hostname, 7735))
                 Window.append([sequence_number, packet.packetData, time.time()])
                 sequence_number+=1
