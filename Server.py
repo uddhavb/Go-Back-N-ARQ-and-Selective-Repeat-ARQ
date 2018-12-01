@@ -7,14 +7,17 @@ import time
 import random
 
 # Simple_ftp_server port# file-name p
-client_port_number = int(sys.argv[1])
-filename = sys.argv[2]
-probability_of_loss = float(sys.argv[3])
+client_ip = input(sys.argv[1])
+client_port_number = int(sys.argv[2])
+filename = sys.argv[3]
+probability_of_loss = float(sys.argv[4])
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-bind_ip = '127.0.0.1'
+# client_ip = '127.0.0.1'
 bind_port = 7735
 server_socket.bind(('', bind_port))
+
+server_socket.settimeout(10)
 # server.listen(5)  # max backlog of connections
 CURRENT_SEQUENCE_NUMBER = 0
 # server_socket, address = server.accept()
@@ -35,13 +38,13 @@ try:
             print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
             # if (time.time() - CURRENT_SEQUENCE_NUMBER[1]) > 3 and CURRENT_SEQUENCE_NUMBER[0] > data[0]:
             #     packet = Packet(CURRENT_SEQUENCE_NUMBER[0], 43690)
-            #     server_socket.sendto(packet.packetData, (bind_ip, client_port_number))
+            #     server_socket.sendto(packet.packetData, (client_ip, client_port_number))
             #     CURRENT_SEQUENCE_NUMBER[1] = time.time()
             if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum or random.uniform(0, 1) > probability_of_loss):
                 print("DATA:\t",data[3].decode("utf-8"))
                 outfile.write(data[3].decode("utf-8"))
                 packet = Packet(int(data[0]), 43690)
-                server_socket.sendto(packet.packetData, (bind_ip, client_port_number))
+                server_socket.sendto(packet.packetData, (client_ip, client_port_number))
                 CURRENT_SEQUENCE_NUMBER += 1
             else:
                 print("Packet loss, sequence number =", data[0])
