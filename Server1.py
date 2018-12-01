@@ -18,6 +18,7 @@ server_socket.settimeout(10)
 # server.listen(5)  # max backlog of connections
 CURRENT_SEQUENCE_NUMBER = 0
 Window = []
+RTTs = []
 RTT = 0
 startRTTCalc = True
 repeatSeq = 0
@@ -30,7 +31,9 @@ try:
             if request == b'END':
                 print("Done sending")
                 RTT = time.time() - RTT
-                break
+                RTTs.append(RTT)
+                startRTTCalc = True
+                continue
             if startRTTCalc:
                 RTT = time.time()
                 startRTTCalc = False
@@ -54,7 +57,8 @@ try:
                         packet = Packet(int(data[0]), 43690)
                         server_socket.sendto(packet.packetData, (client_ip, client_port_number))
                 print("Packet loss, sequence number =", data[0], "curr_seq: ",CURRENT_SEQUENCE_NUMBER, " rece seq:", data[0], checksum, received_checksum)
-    print("RTT: ", RTT)
+    print("RTTs: ", RTTs)
+    print("avg RTT", sum(RTTs)/5)
 except Exception as e:
    print(e)
    print("Connection broken")
