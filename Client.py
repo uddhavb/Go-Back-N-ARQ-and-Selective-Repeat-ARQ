@@ -24,6 +24,7 @@ def get_acks(client):
     global Window
     global lock_on_window
     while True:
+        # time.sleep(3)
         ack, address = client.recvfrom(20)
         if ack != b'':
             ack = extract_data(ack)
@@ -56,23 +57,22 @@ with open(file_name, "rb") as f:
     while mss:
         with lock_on_window:
             if len(Window) <= N:
+                print("Send: ", mss)
                 packet = Packet(sequence_number, 21845, mss)
-#                print("MSS: ", mss)
-                # print("Sending: ", packet.packetData)
-                # client.send(packet.packetData)
-#                print("Client Sent data = " + str(packet.packetData))
                 client.sendto(packet.packetData, (hostname, 7735))
                 Window.append([sequence_number, packet.packetData, time.time()])
                 sequence_number+=1
                 mss = f.read(MSS)
-                time.sleep(0.1)
-            if time.time() - Window[0][2] > 0.2:
+            if time.time() - Window[0][2] > 0.5:
                 print("Timeout, sequence number =", Window[0][0])
                 new_window = []
                 for window_element in Window:
+                    print("Resend: ", window_element[1])
                     client.sendto(window_element[1], (hostname, 7735))
                     # client.send(window_element[1])
                     new_window.append([window_element[0], window_element[1], time.time()])
                 Window = new_window
 
+
+client.sendto(b'END', (hostname, 7735))
 ack_thread.join()
