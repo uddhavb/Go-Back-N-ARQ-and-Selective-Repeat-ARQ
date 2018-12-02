@@ -36,22 +36,24 @@ def get_acks(client):
                     del(Window[0])
                     number_of_elements_to_delete -= 1
 
-for i in range(0,5):
+#for i in range(0,5):
     # create an ipv4 (AF_INET) socket object using the tcp protocol (SOCK_STREAM)
     # client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # # connect the client
     # # client.connect((target, port))
     # client.connect((hostname, port_number))
-    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client.bind(('',port_number))
-    client.settimeout(10)
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client.bind(('',port_number))
+#client.settimeout(30)
     # bind_ip = hostname
     # bind_port = port_number
     # # client.bind((bind_ip, bind_port))
-    ack_thread = threading.Thread(target=get_acks, args = (client,))
-    ack_thread.daemon = True
-    ack_thread.start()
-
+ack_thread = threading.Thread(target=get_acks, args = (client,))
+ack_thread.daemon = True
+ack_thread.start()
+for i in range(0,5):
+    with lock_on_window:
+        Window = []
     with open(file_name, "rb") as f:
         sequence_number = 0
         mss = f.read(MSS)
@@ -74,4 +76,4 @@ for i in range(0,5):
                         new_window.append([window_element[0], window_element[1], time.time()])
                     Window = new_window
     client.sendto(b'END', (hostname, 7735))
-    ack_thread.join()
+ack_thread.join()
