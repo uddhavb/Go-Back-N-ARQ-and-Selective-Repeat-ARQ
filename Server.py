@@ -39,7 +39,7 @@ try:
             received_checksum = received_checksum + request[5]
             data = extract_data(request)
             # print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
-            if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum or random.uniform(0, 1) > probability_of_loss):
+            if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum and random.uniform(0, 1) > probability_of_loss):
                 # print("DATA:\t",data[3].decode("utf-8"))
                 outfile.write(data[3].decode("utf-8"))
                 packet = Packet(int(data[0]), 43690)
