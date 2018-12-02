@@ -14,9 +14,9 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # client_ip = '127.0.0.1'
 bind_port = 7735
 server_socket.bind(('', bind_port))
-server_socket.settimeout(30)
+server_socket.settimeout(20)
 # server.listen(5)  # max backlog of connections
-
+received_packets = []
 try:
     RTTs = []
     while True:
@@ -26,10 +26,19 @@ try:
         startRTTCalc = True
         repeatSeq = 0
         repeatSeqCount=0
+        # num_of_packets = 0
+        # num_drop = 0
         with open(filename, 'w') as outfile:
             while True:
-                request, address = server_socket.recvfrom(1024)
+                request, address = server_socket.recvfrom(1050)
      #           print(request)
+                if request == b'ITERATE':
+                    print("RTTs: ", RTTs)
+                    print("avg RTT", sum(RTTs)/len(RTTs))
+                    print("-------------------------------------------------------------------")
+                    RTTs = []
+                    startRTTCalc = True
+                    break
                 if request == b'END':
                     print("Done sending")
                     RTT = time.time() - RTT
@@ -43,24 +52,30 @@ try:
                 received_checksum = request[4]<<8
                 received_checksum = received_checksum + request[5]
                 data = extract_data(request)
-                # print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
-                if CURRENT_SEQUENCE_NUMBER == int(data[0]) and (checksum == received_checksum or random.uniform(0, 1) > probability_of_loss):
-                    # print("DATA:\t",data[3].decode("utf-8"))
-                    outfile.write(data[3].decode("utf-8"))
-                    packet = Packet(int(data[0]), 43690)
-                    server_socket.sendto(packet.packetData, (client_ip, client_port_number))
-                    repeatSeq = CURRENT_SEQUENCE_NUMBER
-                    CURRENT_SEQUENCE_NUMBER += 1
-                    repeatSeqCount = 0
-                else:
-                    if repeatSeq == data[0]:
-                            repeatSeqCount += 1
-                    if repeatSeqCount > 5:
-                            packet = Packet(int(data[0]), 43690)
-                            server_socket.sendto(packet.packetData, (client_ip, client_port_number))
-                    print("Packet loss, sequence number =", data[0], "curr_seq: ",CURRENT_SEQUENCE_NUMBER, " rece seq:", data[0], checksum, received_checksum)
-        print("RTTs: ", RTTs)
-        print("avg RTT", sum(RTTs)/5)
+                # num_of_packets += 1
+                if checksum == received_checksum and random.uniform(0, 1) > probability_of_loss:
+                    if CURRENT_SEQUENCE_NUMBER == int(data[0]):
+                        # print("DATA:\t",data[3].decode("utf-8"))
+                        outfile.write(data[3].decode("utf-8"))
+                        packet = Packet(int(data[0]), 43690)
+                        server_socket.sendto(packet.packetData, (client_ip, client_port_number))
+                        # repeatSeq = CURRENT_SEQUENCE_NUMBER
+                        CURRENT_SEQUENCE_NUMBER += 1
+                        # repeatSeqCount = 0
+                    # else:
+                    #     packet = Packet(int(data[0]), 43690)
+                    #     server_socket.sendto(packet.packetData, (client_ip, client_port_number))
+                # else:
+                #     num_drop = 1
+                    # print("dropped")
+                    # if repeatSeq == data[0]:
+                    #         repeatSeqCount += 1
+                    # if repeatSeqCount > 5:
+                    #         packet = Packet(int(repeatSeq), 43690)
+                    #         server_socket.sendto(packet.packetData, (client_ip, client_port_number))
+                    #         CURRENT_SEQUENCE_NUMBER += 1
+                    # print("Packet loss, sequence number =", data[0], "curr_seq: ",CURRENT_SEQUENCE_NUMBER)
+        # print("drop percent:", num_drop*100/float(num_of_packets))
 except Exception as e:
    print(e)
    print("Connection broken")

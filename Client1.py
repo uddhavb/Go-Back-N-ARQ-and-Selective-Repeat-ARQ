@@ -44,36 +44,41 @@ def get_acks(client):
     # client.connect((hostname, port_number))
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client.bind(('',port_number))
-#client.settimeout(30)
+client.settimeout(20)
     # bind_ip = hostname
     # bind_port = port_number
     # # client.bind((bind_ip, bind_port))
 ack_thread = threading.Thread(target=get_acks, args = (client,))
 ack_thread.daemon = True
 ack_thread.start()
-for i in range(0,5):
-    with lock_on_window:
-        Window = []
-    with open(file_name, "rb") as f:
-        sequence_number = 0
-        mss = f.read(MSS)
-        while mss:
-            with lock_on_window:
-                if len(Window) <= N:
-                    # print("Send: ", mss)
-                    packet = Packet(sequence_number, 21845, mss)
-                    client.sendto(packet.packetData, (hostname, 7735))
-                    Window.append([sequence_number, packet.packetData, time.time()])
-                    sequence_number+=1
-                    mss = f.read(MSS)
-                if time.time() - Window[0][2] > 0.5:
-                    print("Timeout, sequence number =", Window[0][0])
-                    new_window = []
-                    for window_element in Window:
-                        # print("Resend: ", window_element[1])
-                        client.sendto(window_element[1], (hostname, 7735))
-                        # client.send(window_element[1])
-                        new_window.append([window_element[0], window_element[1], time.time()])
-                    Window = new_window
-    client.sendto(b'END', (hostname, 7735))
+iteration_list = [100,200,300,400,500,600,700,800,900,1000]
+for iteration_value in iteration_list:
+    MSS = iteration_value
+    print("MSS:", MSS)
+    for i in range(0,5):
+        with lock_on_window:
+            Window = []
+        with open(file_name, "rb") as f:
+            sequence_number = 0
+            mss = f.read(MSS)
+            while mss:
+                with lock_on_window:
+                    if len(Window) <= N:
+                        # print("Send: ", mss)
+                        packet = Packet(sequence_number, 21845, mss)
+                        client.sendto(packet.packetData, (hostname, 7735))
+                        Window.append([sequence_number, packet.packetData, time.time()])
+                        sequence_number+=1
+                        mss = f.read(MSS)
+                    if time.time() - Window[0][2] > 0.5:
+                        print("Timeout, sequence number =", Window[0][0])
+                        new_window = []
+                        for window_element in Window:
+                            # print("Resend: ", window_element[1])
+                            client.sendto(window_element[1], (hostname, 7735))
+                            # client.send(window_element[1])
+                            new_window.append([window_element[0], window_element[1], time.time()])
+                        Window = new_window
+        client.sendto(b'END', (hostname, 7735))
+    client.sendto(b'ITERATE', (hostname, 7735))
 ack_thread.join()
