@@ -53,8 +53,7 @@ try:
                 if repeatSeqCount > 5:
                         packet = Packet(int(data[0]), 43690)
                         server_socket.sendto(packet.packetData, (client_ip, client_port_number))
-                print("Packet loss, sequence number =", data[0], "curr_seq: ",CURRENT_SEQUENCE_NUMBER, " rece seq:", data[0], checksum, received_checksum)
-    print("RTT: ", RTT)
+                print("Packet loss, sequence number =", data[0])
 except Exception as e:
    print(e)
    print("Connection broken")

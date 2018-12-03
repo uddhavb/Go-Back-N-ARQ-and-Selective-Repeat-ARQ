@@ -57,7 +57,6 @@ with open(file_name, "rb") as f:
     while mss:
         with lock_on_window:
             if len(Window) <= N:
-                print("Send: ", mss)
                 packet = Packet(sequence_number, 21845, mss)
                 client.sendto(packet.packetData, (hostname, 7735))
                 Window.append([sequence_number, packet.packetData, time.time()])
@@ -67,7 +66,6 @@ with open(file_name, "rb") as f:
                 print("Timeout, sequence number =", Window[0][0])
                 new_window = []
                 for window_element in Window:
-                    print("Resend: ", window_element[1])
                     client.sendto(window_element[1], (hostname, 7735))
                     # client.send(window_element[1])
                     new_window.append([window_element[0], window_element[1], time.time()])
