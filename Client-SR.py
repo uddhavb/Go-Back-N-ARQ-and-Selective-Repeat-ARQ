@@ -15,7 +15,7 @@ MSS = int(sys.argv[5])
 '''
 maintain a list of size N
 '''
-Window = [] #[sequence_number, packetData, time, isAckReceived]
+Window = []
 lock_on_window = threading.Lock()
 
 
@@ -29,19 +29,12 @@ def get_acks(client):
         if ack != b'':
             ack = extract_data(ack)
             with lock_on_window:
-                list_to_remove = []
                 for index, element in enumerate(Window):
-                    if element[3] == True:
-                        list_to_remove.append(index)
                     if element[0] == ack[0]:
-                        Window[index][3] = True
-                for i in list_to_remove:
-                    del Window[i]
-
-                #         number_of_elements_to_delete = index+1
-                # while number_of_elements_to_delete > 0:
-                #     del(Window[0])
-                #     number_of_elements_to_delete -= 1
+                        number_of_elements_to_delete = index+1
+                while number_of_elements_to_delete > 0:
+                    del(Window[0])
+                    number_of_elements_to_delete -= 1
 
 
 # create an ipv4 (AF_INET) socket object using the tcp protocol (SOCK_STREAM)
@@ -51,7 +44,7 @@ def get_acks(client):
 # client.connect((hostname, port_number))
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client.bind(('',port_number))
-client.settimeout(30)
+client.settimeout(10)
 # bind_ip = hostname
 # bind_port = port_number
 # # client.bind((bind_ip, bind_port))
@@ -64,21 +57,20 @@ with open(file_name, "rb") as f:
     while mss:
         with lock_on_window:
             if len(Window) <= N:
-                print("Send: ", mss)
                 packet = Packet(sequence_number, 21845, mss)
                 client.sendto(packet.packetData, (hostname, 7735))
-                Window.append([sequence_number, packet.packetData, time.time(), False])
+                Window.append([sequence_number, packet.packetData, time.time()])
                 sequence_number+=1
                 mss = f.read(MSS)
-            if time.time() - Window[0][2] > 0.5:
-                print("Timeout, sequence number =", Window[0][0])
-                new_window = []
-                for window_element in Window:
-                    if window_element[3] == False:
-                        print("Resend: ", window_element[1])
-                        client.sendto(window_element[1], (hostname, 7735))
-                        new_window.append([window_element[0], window_element[1], time.time(), window_element[3]])
-                Window = new_window
+            new_window = []
+            for index,window_element in enumerate(Window):
+                if time.time() - Window[index][2] > 0.5:
+                    print("Timeout, sequence number =", Window[index][0])
+                    client.sendto(window_element[1], (hostname, 7735))
+                    new_window.append([window_element[0], window_element[1], time.time()])
+                else:
+                    new_window.append([window_element[0], window_element[1], time.time()])
+            Window = new_window
 
 
 client.sendto(b'END', (hostname, 7735))

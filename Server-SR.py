@@ -13,8 +13,8 @@ client_ip = sys.argv[1]
 client_port_number = int(sys.argv[2])
 filename = sys.argv[3]
 probability_of_loss = float(sys.argv[4])
+N = int(sys.argv[5])
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# client_ip = '127.0.0.1'
 bind_port = 7735
 server_socket.bind(('', bind_port))
 server_socket.settimeout(10)
@@ -25,19 +25,36 @@ CURRENT_SEQUENCE_NUMBER = 0
 lock_on_window = threading.Lock()
 
 def write_to_file(filename):
+    global end_write
     global Window
     global lock_on_window
     global CURRENT_SEQUENCE_NUMBER
     with open(filename, 'w') as outfile:
         while True:
-            if end_write:
-                break
             with lock_on_window:
-                while len(Window) != 0:
-                    if Window[0][0] == CURRENT_SEQUENCE_NUMBER:
+                elements = []
+                for element in Window:
+                    elements.append(element[0])
+                print("````````",elements,'`````````',len(elements), '-----',CURRENT_SEQUENCE_NUMBER)
+                if end_write:
+                    while(len(Window)!=0):
+                        print("WRITING:__", CURRENT_SEQUENCE_NUMBER)
                         outfile.write(Window[0][1].decode("utf-8"))
                         del Window[0]
                         CURRENT_SEQUENCE_NUMBER += 1
+                    break
+                elif len(Window) >= N:
+                    if Window[0][0] == CURRENT_SEQUENCE_NUMBER:
+                        print("WRITING:", CURRENT_SEQUENCE_NUMBER)
+                        outfile.write(Window[0][1].decode("utf-8"))
+                        del Window[0]
+                        CURRENT_SEQUENCE_NUMBER += 1
+                    elif Window[0][0] < CURRENT_SEQUENCE_NUMBER:
+                        raise ValueError('sequence number more than first packet in window')
+                    else:
+                        CURRENT_SEQUENCE_NUMBER = Window[0][0]
+    print("DONE WRITING.......")
+
 
 write_thread = threading.Thread(target=write_to_file, args = (filename,))
 write_thread.daemon = True
@@ -64,21 +81,21 @@ try:
             received_checksum = request[4]<<8
             received_checksum = received_checksum + request[5]
             data = extract_data(request)
-            # print("calculated checksum: ", checksum, "received checksum: ", received_checksum)
             if (checksum == received_checksum and random.uniform(0, 1) > probability_of_loss):
-                print(data[3].decode('utf8'))
-                with lock_on_window:
-                    exists = False
-                    for pending_packet in Window:
-                        if pending_packet[0] == data[0]:
-                            exists = True
-                    if not exists:
-                        bisect.insort(Window,[int(data[0]), data[3]])
                 packet = Packet(int(data[0]), 43690)
                 server_socket.sendto(packet.packetData, (client_ip, client_port_number))
-            else:
-                print("Packet loss, sequence number =", data[0])
+                # print("ack: ", data[0])
+                with lock_on_window:
+                    # print(CURRENT_SEQUENCE_NUMBER, data[0], "---------------")
+                    list_of_seq = []
+                    for element in Window:
+                        list_of_seq.append(element[0])
+                    if data[0] >= CURRENT_SEQUENCE_NUMBER and int(data[0]) not in list_of_seq:
+                        bisect.insort(Window,[int(data[0]), data[3]])
+            # else:
+            #     print("Packet loss, sequence number =", data[0])
     print("RTT: ", RTT)
 except Exception as e:
    print(e)
    print("Connection broken")
+write_thread.join()
