@@ -4,9 +4,9 @@ Use python3 and install the necessary libraries
 First run the server side:  
 `python Server.py client_ip common_port file_to_write_to probability_of_loss`   
 then run the client side:  
-`python Server.py server_ip common_port file_to_trasfer N MSS`   
+`python Client.py server_ip common_port file_to_trasfer N MSS`   
 ### Selective Repeat ARQ   
 First run the server side:  
-`python Server.py client_ip common_port file_to_write_to probability_of_loss N`  
+`python Server-SR.py client_ip common_port file_to_write_to probability_of_loss N`  
 then run the client side:   
-`python Server.py server_ip common_port file_to_trasfer N MSS`   
+`python CLient-SR.py server_ip common_port file_to_trasfer N MSS`   
