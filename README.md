@@ -9,4 +9,4 @@ then run the client side:
 First run the server side:  
 `python Server-SR.py client_ip common_port file_to_write_to probability_of_loss N`  
 then run the client side:   
-`python CLient-SR.py server_ip common_port file_to_trasfer N MSS`   
+`python Client-SR.py server_ip common_port file_to_trasfer N MSS`   
