@@ -35,7 +35,7 @@ def write_to_file(filename):
                 elements = []
                 for element in Window:
                     elements.append(element[0])
-                print("````````",elements,'`````````',len(elements), '-----',CURRENT_SEQUENCE_NUMBER)
+                # print("````````",elements,'`````````',len(elements), '-----',CURRENT_SEQUENCE_NUMBER)
                 if end_write:
                     while(len(Window)!=0):
                         # print("WRITING:__", CURRENT_SEQUENCE_NUMBER)
@@ -83,7 +83,7 @@ try:
         if (checksum == received_checksum and random.uniform(0, 1) > probability_of_loss):
             packet = Packet(int(data[0]), 43690)
             server_socket.sendto(packet.packetData, (client_ip, client_port_number))
-            print("ack: ", data[0])
+            # print("ack: ", data[0])
             with lock_on_window:
                 # print(CURRENT_SEQUENCE_NUMBER, data[0], "---------------")
                 list_of_seq = []
